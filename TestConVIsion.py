@@ -9,6 +9,27 @@ from google.cloud import vision
 # Configurar Google Cloud Vision
 client = vision.ImageAnnotatorClient()
 
+# Lista de frutas comunes en inglés
+FRUITS = {
+    "apple",
+    "banana",
+    "orange",
+    "grape",
+    "pineapple",
+    "strawberry",
+    "watermelon",
+    "mango",
+    "peach",
+    "pear",
+    "cherry",
+    "blueberry",
+    "raspberry",
+    "lemon",
+    "lime",
+    "coconut",
+    "plum",
+}
+
 # Configurar la cámara con resolución reducida
 cap = cv2.VideoCapture(0)  # 0 para la cámara por defecto
 cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
@@ -26,27 +47,34 @@ frame1_gray = cv2.GaussianBlur(frame1_gray, (21, 21), 0)
 
 ultimo_tiempo = time.time()  # Tiempo de la última captura
 
+
 def procesar_imagen(frame):
-    """ Captura, analiza con Google Cloud Vision y borra la imagen """
+    """Captura, analiza con Google Cloud Vision y borra la imagen"""
     try:
         img_path = "captura.jpg"
         cv2.imwrite(img_path, frame)
 
-        # Llamar a Google Cloud Vision
-        with io.open(img_path, 'rb') as image_file:
+        # Llamar a Google Cloud Vision con Object Localization
+        with io.open(img_path, "rb") as image_file:
             content = image_file.read()
         image = vision.Image(content=content)
 
-        response = client.label_detection(image=image)
-        labels = response.label_annotations
+        response = client.object_localization(image=image)
+        objects = response.localized_object_annotations
 
-        for label in labels:
-            print(f"🔍 {label.description} ({label.score:.2f})")
+        # Filtrar solo frutas
+        detected_fruits = [obj.name for obj in objects if obj.name.lower() in FRUITS]
+
+        if detected_fruits:
+            print(f"🍏 Frutas detectadas: {', '.join(detected_fruits)}")
+        else:
+            print("⚠️ Ninguna fruta detectada.")
 
         os.remove(img_path)
         print("🗑️ Imagen eliminada después del análisis.")
     except Exception as e:
         print(f"❌ Error al procesar la imagen: {e}")
+
 
 while True:
     # Leer el siguiente fotograma
@@ -75,7 +103,7 @@ while True:
     cv2.imshow("Cámara", frame2)
 
     # Salir con la tecla 'q'
-    if cv2.waitKey(1) & 0xFF == ord('q'):
+    if cv2.waitKey(1) & 0xFF == ord("q"):
         break
 
 # Liberar la cámara y cerrar ventanas
