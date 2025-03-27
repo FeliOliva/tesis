@@ -1,0 +1,29 @@
+{
+  "name": "tesispy",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "concurrently \"node server.js\" \"python TestConVision.py\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FeliOliva/tesis.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/FeliOliva/tesis/issues"
+  },
+  "homepage": "https://github.com/FeliOliva/tesis#readme",
+  "description": "",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "http": "^0.0.1-security",
+    "ws": "^8.18.1"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
