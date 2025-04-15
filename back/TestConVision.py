@@ -9,7 +9,18 @@ import numpy as np
 from google.cloud import vision
 
 client = vision.ImageAnnotatorClient()
-FRUITS = {"apple", "banana", "orange", "peach", "pear", "lemon", "plum", "tomato"}
+
+# Diccionario de traducción de frutas (Inglés -> Español)
+FRUIT_TRANSLATIONS = {
+    "apple": "manzana",
+    "banana": "banana",
+    "orange": "naranja",
+    "lemon": "limón",
+    "tomato": "tomate",
+    "pear": "pera",
+    "kiwi": "kiwi",
+    "avocado": "palta",
+}
 
 # Configuración de la cámara
 cap = cv2.VideoCapture(1)
@@ -40,7 +51,7 @@ async def send_fruit(fruit):
 
 
 def procesar_imagen(frame):
-    """Captura, analiza con Google Cloud Vision y envía la fruta detectada"""
+    """Captura, analiza con Google Cloud Vision y envía la fruta detectada en español"""
     try:
         img_path = "captura.jpg"
         cv2.imwrite(img_path, frame)
@@ -53,8 +64,12 @@ def procesar_imagen(frame):
         response = client.object_localization(image=image)
         objects = response.localized_object_annotations
 
-        # Filtrar solo frutas
-        detected_fruits = [obj.name for obj in objects if obj.name.lower() in FRUITS]
+        # Filtrar frutas y traducirlas al español
+        detected_fruits = [
+            FRUIT_TRANSLATIONS[obj.name.lower()]
+            for obj in objects
+            if obj.name.lower() in FRUIT_TRANSLATIONS
+        ]
 
         if detected_fruits:
             frutas_detectadas = ", ".join(detected_fruits)
