@@ -6,6 +6,7 @@ import threading
 import asyncio
 import websockets
 import numpy as np
+from collections import Counter
 from google.cloud import vision
 
 client = vision.ImageAnnotatorClient()
@@ -15,7 +16,7 @@ FRUIT_TRANSLATIONS = {
     "apple": "manzana",
     "banana": "banana",
     "orange": "naranja",
-    "lemon": "limón",
+    "lemon": "Limon",
     "tomato": "tomate",
     "pear": "pera",
     "kiwi": "kiwi",
@@ -72,12 +73,19 @@ def procesar_imagen(frame):
         ]
 
         if detected_fruits:
-            frutas_detectadas = ", ".join(detected_fruits)
-            print(f"🍏 Frutas detectadas: {frutas_detectadas}")
-            asyncio.run(send_fruit(frutas_detectadas))  # Enviar a WebSocket
+            conteo = Counter(detected_fruits)
+            frutas_unicas = list(conteo.keys())
+
+            if len(frutas_unicas) == 1:
+                fruta = frutas_unicas[0]
+                cantidad = conteo[fruta]
+                print(f"🍏 Fruta detectada: {fruta} (x{cantidad})")
+                asyncio.run(send_fruit(fruta))  # Enviar una sola vez
+            else:
+                print(f"⚠️ Se detectaron múltiples frutas: {', '.join(frutas_unicas)}")
+                print("🚫 Por favor, coloca solo un tipo de fruta en la balanza.")
         else:
             print("⚠️ Ninguna fruta detectada.")
-
         os.remove(img_path)
         print("🗑️ Imagen eliminada después del análisis.")
     except Exception as e:

@@ -49,8 +49,8 @@ const App = () => {
       const nuevoItem = {
         producto: articulo.nombre,
         precio: parseFloat(articulo.precio),
-        cantidad: parseFloat(articulo.peso),
-        subTotal: parseFloat(articulo.precio) * parseFloat(articulo.peso),
+        cantidad: 0.2,
+        subTotal: parseFloat(articulo.precio) * 0.2,
       };
 
       const nuevosItems = [...carrito, nuevoItem];
@@ -67,6 +67,36 @@ const App = () => {
   const limpiarCarrito = () => {
     setCarrito([]);
     setTotalCompra(0);
+  };
+
+  const finalizarCompra = async () => {
+    if (carrito.length === 0) return;
+
+    try {
+      // Por simplicidad, creamos una preferencia con el total del carrito
+      const response = await fetch("http://localhost:3000/api/createQR", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title: "Compra en kiosco",
+          quantity: 1,
+          unit_price: totalCompra,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.init_point) {
+        window.open(data.init_point, "_blank"); // abre Mercado Pago en otra pestaña
+      } else {
+        alert("Error al generar el link de pago.");
+      }
+    } catch (error) {
+      console.error("Error al finalizar la compra:", error);
+      alert("Ocurrió un error al procesar el pago.");
+    }
   };
 
   return (
@@ -153,7 +183,10 @@ const App = () => {
             >
               Vaciar Carrito
             </button>
-            <button className="bg-green-500 text-white px-4 py-2 rounded">
+            <button
+              onClick={finalizarCompra}
+              className="bg-green-500 text-white px-4 py-2 rounded"
+            >
               Finalizar Compra
             </button>
           </div>

@@ -1,4 +1,36 @@
 const model = require('../models/model.js');
+const { MercadoPagoConfig, Preference } = require('mercadopago');
+
+const client = new MercadoPagoConfig({
+    accessToken: process.env.MERCADO_PAGO_ACCESS_TOKEN,
+});
+
+const preferenceInstance = new Preference(client);
+const createQR = async (req, res) => {
+    try {
+        const { title, quantity, unit_price } = req.body;
+
+        const preferenceData = {
+            items: [
+                {
+                    title,
+                    quantity,
+                    unit_price,
+                    currency_id: 'ARS',
+                },
+            ],
+            payment_methods: {
+                excluded_payment_types: [{ id: 'ticket' }],
+            },
+        };
+
+        const response = await preferenceInstance.create({ body: preferenceData });
+        res.status(200).json({ init_point: response.init_point });
+    } catch (error) {
+        console.error("Error al crear la preferencia de pago:", error);
+        res.status(500).json({ error: 'Error al crear la preferencia' });
+    }
+};
 
 const getArticuloByNombre = async (req, res) => {
     try {
@@ -40,5 +72,6 @@ const createVenta = async (req, res) => {
 
 module.exports = {
     getArticuloByNombre,
-    createVenta
+    createVenta,
+    createQR,
 };
