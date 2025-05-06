@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { ShoppingCart, Scale, Barcode, Check, X } from "lucide-react";
-import DroidCamViewer from "./components/DroidCamViewer";
+import CameraViewer from "./components/CameraViewer";
 const App = () => {
   const [articulo, setArticulo] = useState({
     nombre: "",
@@ -119,7 +119,7 @@ const App = () => {
         {/* Producto Actual */}
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h2 className="text-xl font-bold mb-4">Cámara de Supervisión</h2>
-          <DroidCamViewer />
+          <CameraViewer />
 
           <div className="text-center">
             <h2 className="text-2xl font-bold mb-2">{articulo.nombre}</h2>
