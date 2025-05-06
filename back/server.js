@@ -2,8 +2,7 @@ const express = require("express");
 const http = require("http");
 const WebSocket = require("ws");
 const cors = require("cors");
-const db = require('./db.js');
-
+const db = require("./db.js");
 
 const app = express();
 const server = http.createServer(app);
@@ -11,58 +10,89 @@ const wss = new WebSocket.Server({ server });
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-//routes
-const Routes = require("./routes/route.js");
 
+const Routes = require("./routes/route.js");
 app.use("/api", Routes);
 
-// Función para buscar un artículo por nombre
-const getArticuloByNombre = async (nombre) => {
-    try {
-        const [rows] = await db.query("SELECT nombre, precio FROM articulos WHERE nombre = ?", [nombre]);
-        return rows.length > 0 ? rows[0] : null;
-    } catch (error) {
-        console.error("Error en la BD:", error);
-        return null;
-    }
+let ultimoPeso = { valor: 0, timestamp: 0 };
+let ultimoArticulo = null;
+
+const buscarArticulo = async (nombre) => {
+  try {
+    const response = await fetch(
+      `http://localhost:3000/api/articulos?nombre=${encodeURIComponent(nombre)}`
+    );
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    return await response.json();
+  } catch (error) {
+    console.error("Error al buscar artículo:", error);
+    return { nombre: nombre, precio: 0 };
+  }
 };
 
+const broadcastDatosCombinados = () => {
+  if (!ultimoArticulo) return;
+
+  const precioTotal =
+    ultimoPeso.valor > 0
+      ? (ultimoArticulo.precio * (ultimoPeso.valor / 1000)).toFixed(2)
+      : 0;
+
+  const datos = {
+    nombre: ultimoArticulo.nombre,
+    precio: ultimoArticulo.precio,
+    peso: ultimoPeso.valor,
+    precioTotal: precioTotal,
+    precioPorKg: ultimoArticulo.precio,
+  };
+
+  wss.clients.forEach((client) => {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(JSON.stringify(datos));
+    }
+  });
+};
 
 wss.on("connection", (ws) => {
-    console.log("🟢 Cliente conectado al WebSocket");
+  console.log("🟢 Cliente conectado al WebSocket");
 
-    ws.on("message", async (message) => {
-        const textMessage = message.toString(); // Convertir Buffer a texto
-        console.log(`📩 Fruta recibida: ${textMessage}`);
+  if (ultimoArticulo) {
+    broadcastDatosCombinados();
+  }
 
-        try {
-            // Hacer una petición al endpoint de la base de datos
-            const response = await fetch(`http://localhost:3000/api/articulos?nombre=${textMessage}`);
-            const articulo = await response.json();
+  ws.on("message", async (message) => {
+    try {
+      const data = JSON.parse(message.toString());
 
-            console.log("📦 Datos del artículo:", articulo);
+      if (data.tipo === "peso") {
+        ultimoPeso = {
+          valor: data.valor,
+          timestamp: Date.now(),
+        };
+        console.log(`⚖️ Peso actualizado: ${data.valor}g`);
+        broadcastDatosCombinados();
+        return;
+      }
 
-            // Enviar la respuesta formateada a todos los clientes WebSocket
-            const jsonResponse = JSON.stringify({
-                nombre: articulo.nombre || "No encontrado",
-                precio: articulo.precio || "-",
-            });
-
-            wss.clients.forEach((client) => {
-                if (client.readyState === WebSocket.OPEN) {
-                    client.send(jsonResponse);
-                }
-            });
-        } catch (error) {
-            console.error("❌ Error al obtener el artículo:", error);
+      if (data.tipo === "fruta") {
+        const articulo = await buscarArticulo(data.nombre);
+        if (articulo) {
+          ultimoArticulo = articulo;
+          console.log("📦 Datos del artículo:", articulo);
+          broadcastDatosCombinados();
         }
-    });
+      }
+    } catch (error) {
+      console.error("❌ Error al procesar mensaje:", error);
+    }
+  });
 
-    ws.on("close", () => {
-        console.log("🔴 Cliente desconectado del WebSocket");
-    });
+  ws.on("close", () => {
+    console.log("🔴 Cliente desconectado del WebSocket");
+  });
 });
+
 const PORT = 3000;
 server.listen(PORT, () => {
-    console.log(`Servidor WebSocket corriendo en http://localhost:${PORT}`);
+  console.log(`Servidor WebSocket corriendo en http://localhost:${PORT}`);
 });

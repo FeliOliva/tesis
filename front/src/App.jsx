@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { ShoppingCart, Scale, Barcode, Check, X } from "lucide-react";
-
+import DroidCamViewer from "./components/DroidCamViewer";
 const App = () => {
   const [articulo, setArticulo] = useState({
     nombre: "",
@@ -12,24 +12,33 @@ const App = () => {
   const [totalCompra, setTotalCompra] = useState(0);
   const [websocketStatus, setWebsocketStatus] = useState("Conectando...");
 
+  // Función para formatear el peso
+  const formatPeso = useCallback((gramos) => {
+    return gramos >= 1000 ? `${(gramos / 1000).toFixed(2)} kg` : `${gramos} g`;
+  }, []);
+
   useEffect(() => {
     const WS_URL = "ws://localhost:3000";
     const websocket = new WebSocket(WS_URL);
 
     websocket.onopen = () => {
       setWebsocketStatus("Conectado");
-      console.log("conectado");
+      console.log("Conexión WebSocket establecida");
     };
 
     websocket.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        setArticulo({
+        console.log("Datos recibidos:", data);
+
+        setArticulo((prev) => ({
+          ...prev,
           nombre: data.nombre || "Producto no identificado",
-          precio: data.precio || "-",
-          peso: data.peso || "0 kg",
-          precioPorKg: data.precioPorKg || "-",
-        });
+          precio: data.precioPorKg || "0",
+          peso: data.peso || 0,
+          precioTotal: data.precioTotal || "0",
+          precioPorKg: data.precioPorKg || "0",
+        }));
       } catch (error) {
         console.error("Error al parsear el mensaje:", error);
       }
@@ -37,6 +46,12 @@ const App = () => {
 
     websocket.onclose = () => {
       setWebsocketStatus("Desconectado");
+      console.log("Conexión WebSocket cerrada");
+    };
+
+    websocket.onerror = (error) => {
+      console.error("Error en WebSocket:", error);
+      setWebsocketStatus("Error de conexión");
     };
 
     return () => {
@@ -45,22 +60,21 @@ const App = () => {
   }, []);
 
   const agregarAlCarrito = () => {
-    if (articulo.nombre && articulo.nombre !== "Producto no identificado") {
+    if (
+      articulo.nombre &&
+      articulo.nombre !== "Producto no identificado" &&
+      articulo.peso > 0
+    ) {
+      const cantidad = articulo.peso / 1000; // Convertir a kg
       const nuevoItem = {
         producto: articulo.nombre,
-        precio: parseFloat(articulo.precio),
-        cantidad: 0.2,
-        subTotal: parseFloat(articulo.precio) * 0.2,
+        precio: parseFloat(articulo.precioPorKg),
+        cantidad: cantidad,
+        subTotal: parseFloat(articulo.precioTotal),
       };
 
-      const nuevosItems = [...carrito, nuevoItem];
-      setCarrito(nuevosItems);
-
-      const nuevoTotal = nuevosItems.reduce(
-        (acc, item) => acc + item.subTotal,
-        0
-      );
-      setTotalCompra(nuevoTotal);
+      setCarrito((prev) => [...prev, nuevoItem]);
+      setTotalCompra((prev) => prev + nuevoItem.subTotal);
     }
   };
 
@@ -104,33 +118,39 @@ const App = () => {
       <div className="grid grid-cols-2 gap-6">
         {/* Producto Actual */}
         <div className="bg-white p-6 rounded-lg shadow-md">
-          <div className="h-64 bg-gray-200 flex items-center justify-center mb-4">
-            <Scale size={100} className="text-gray-500" />
-          </div>
+          <h2 className="text-xl font-bold mb-4">Cámara de Supervisión</h2>
+          <DroidCamViewer />
 
           <div className="text-center">
             <h2 className="text-2xl font-bold mb-2">{articulo.nombre}</h2>
             <div className="grid grid-cols-2 gap-2 mb-4">
               <div>
                 <label className="block text-sm text-gray-600">Peso</label>
-                <p className="font-semibold">{articulo.peso} kg</p>
+                <p className="font-semibold">
+                  {articulo.peso > 0 ? formatPeso(articulo.peso) : "---"}
+                </p>
               </div>
               <div>
                 <label className="block text-sm text-gray-600">
                   Precio por kg
                 </label>
-                <p className="font-semibold">${articulo.precio}</p>
+                <p className="font-semibold">${articulo.precioPorKg || "0"}</p>
+              </div>
+              <div>
+                <label className="block text-sm text-gray-600">Total</label>
+                <p className="font-semibold">${articulo.precioTotal || "0"}</p>
               </div>
             </div>
             <div className="flex justify-center space-x-4">
               <button
                 onClick={agregarAlCarrito}
                 className="bg-green-500 text-white px-4 py-2 rounded flex items-center"
+                disabled={
+                  !articulo.peso ||
+                  articulo.nombre === "Producto no identificado"
+                }
               >
                 <Check className="mr-2" /> Confirmar
-              </button>
-              <button className="bg-red-500 text-white px-4 py-2 rounded flex items-center">
-                <X className="mr-2" /> Cancelar
               </button>
             </div>
           </div>

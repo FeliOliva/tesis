@@ -8,6 +8,7 @@ import websockets
 import numpy as np
 from collections import Counter
 from google.cloud import vision
+import json
 
 client = vision.ImageAnnotatorClient()
 
@@ -45,14 +46,15 @@ async def send_fruit(fruit):
     uri = "ws://localhost:3000"
     try:
         async with websockets.connect(uri) as websocket:
-            await websocket.send(fruit)
+            # Enviar como JSON con tipo "fruta"
+            message = json.dumps({"tipo": "fruta", "nombre": fruit})
+            await websocket.send(message)
             print(f"📤 Fruta enviada: {fruit}")
     except Exception as e:
         print(f"⚠️ Error al conectar con WebSocket: {e}")
 
 
 def procesar_imagen(frame):
-    """Captura, analiza con Google Cloud Vision y envía la fruta detectada en español"""
     try:
         img_path = "captura.jpg"
         cv2.imwrite(img_path, frame)
@@ -110,10 +112,6 @@ while True:
         threading.Thread(target=procesar_imagen, args=(frame2.copy(),)).start()
 
     frame1_gray = frame2_gray
-    cv2.imshow("Cámara", frame2)
 
-    if cv2.waitKey(1) & 0xFF == ord("q"):
-        break
 
 cap.release()
-cv2.destroyAllWindows()
