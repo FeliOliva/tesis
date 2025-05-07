@@ -6,7 +6,7 @@ from datetime import datetime
 
 # Configuración del puerto serial
 puerto = serial.Serial(
-    port="COM4",
+    port="/dev/ttyUSB0",
     baudrate=9600,
     bytesize=serial.EIGHTBITS,
     parity=serial.PARITY_NONE,

@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "semiotic-quasar-442819-m9",
+  "private_key_id": "90e6c9175ad176062c4b85ad060aa2133c63ff4b",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQDAEtsLCAmOWhvS\nb346MaQjuBirDnmzOZGgtWhAQR4va4I5uxXks1bOTuSwKAcMKr5jSsmWaiS6SY6Y\n6a1dTKC1Ms49ByL5c6rsZoVYagQOEew53CR0d3+Roup5H5xG60ikvzezZ0VJQ8HA\n2UFq9gPb/kvyHLjazirxKjGsdl6DMu6vlYvsD+7UJ8OL/3nvHaEirZD0CJLLhaG2\n/S77zmlH1/g8FCy44tJA6kBaYKLwfvE4GH5GvinzLzToyHDrT3r58ggjM/aGhIuh\nu7PsfPTivMqSSVm48cSa80PX8OzpW+WnUyAL4RidEDbcpPAwysdawxzY828Aedjb\noh7XkWmrAgMBAAECggEAWLo9Ir7vPynEEXV8r6BP7Uo1Zwu0T4VIDx/ODWSnb4tv\n6IBSsEfiUUKjpPaQrt+t/ItHTWsyFTY2n8/OzLtBwAK8v/dkgiybKEKB1eJ/hgpk\ngCQAWSb8sMe8HgDqvd4hvC0zK3aIzLv2rMIP1LvZ843pAmqfQECeGLL/qGYz6dHX\nY5CYpRV9Ty3MaKrsUsJ52I/ob4jq0x4/yq9GFXBNRlez8m3GO2vZSgi1XUuP1av9\naAF+wV4tTrja3AllY9xtSC1mwrcuYADGua/oqxofVBr616A2lnUdYC+OGZipf7t9\n06qCY21ezUi4/ykCe6MUsvCx6Us2SkzuunsLdFvDAQKBgQDwatMwJmU9Z683pRnN\nBT7o4He6WWeVi7o4oBI278zbBXiQRIgsBiRWDftrS+9kSpuvzbFGvtVwK8QVtPzT\nxNHa5P+L7kypS/IhVs+/ykaIayhDXeYkF1pusxUqQoXgRiol96dUqQmi11VPQhke\nnRuUW8yPZrbN/FUfknXETWkQqwKBgQDMheDyNwA52/Y6CSzBnuNyHKR+Nt7zlW+Y\nsE3gRFYgTiBsddBLwpgWzfTCv81zn2QLG3WMLR0gNPbL+KGN9hYMCtynBKiVQmR1\nmChFcAfEvb7B9cILp4Vz3wGd5aRSHvocviP+2YCAUM8vF2TnMpJDqIKfX3r/2poG\nTa+53VMLAQKBgQCSWgU7f3QLwE1qi0e8hZ/5NYPM3dXvtEJlbBQKe0nyXk85S261\nlfuSoypU88HEBKLnj0iGb28QvKO+LxHlfB/fp51kumjSelfoMad/8gujyc+Vythp\nSgoT71JICnzivPO1bx/eqpQiHAFjoTIXb741Pvi0putLU3siIA8us4zsxwKBgQC5\n06KRMPwZlgvgq1lpCw6pLfEfZIeqVkqxNu9rJ2wBqjq3kUwSqdo6TiNnl5H6zgW+\nOdLR7GOcUcMzjNJtA/0AMBZQAmGSTGKunfNpM+M7FRPvc3Y91JXis+rqJi7pFpA1\n8WUPN1wUOlgk92KM1lwi8UbNu5ksQtjThV52x+ueAQKBgQCOcb064YYw1/KLVHeL\nxE+xSmkAspF4kfYIaSRTL5qt/fAmuqhjirRdkNjPAeFJFjWML1d89Jtthpzxt9OX\nx2IMeyVew7aENpzO0/Tj7C/ZO9ZDJvXRFEFzVsnSeSykTnGJpl406/kC3vZMWawg\nNlEOno8WLMld1xrgRmbsF2mUlg==\n-----END PRIVATE KEY-----\n",
+  "client_email": "ubuntufeli@semiotic-quasar-442819-m9.iam.gserviceaccount.com",
+  "client_id": "101068584486545507178",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/ubuntufeli%40semiotic-quasar-442819-m9.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
