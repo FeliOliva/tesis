@@ -1,3 +1,4 @@
+const { get } = require("http");
 const db = require("../db.js");
 
 const getArticuloByNombre = async (nombre) => {
@@ -43,9 +44,39 @@ const createDetalleVenta = async (ventaId, detalles) => {
     throw error;
   }
 };
+const getVentas = async (id) => {
+  try {
+    const [rows] = await db.query(
+      `SELECT 
+  dv.id,
+  dv.venta_id,
+  dv.articulo_id,
+  a.nombre AS nombre_articulo,
+  dv.precio,
+  dv.cantidad,
+  dv.fecha_momento,
+  v.nro_venta
+FROM 
+  detalle_venta dv
+INNER JOIN 
+  articulos a ON dv.articulo_id = a.id
+INNER JOIN 
+  venta v ON dv.venta_id = v.id
+WHERE 
+  dv.venta_id = ?
+`,
+      [id]
+    );
+    return rows; // o `return rows` si querés devolver todos los detalles
+  } catch (error) {
+    console.error("Error al obtener la venta:", error);
+    throw error;
+  }
+};
 
 module.exports = {
   getArticuloByNombre,
   createVenta,
   createDetalleVenta,
+  getVentas,
 };

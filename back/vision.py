@@ -25,7 +25,7 @@ FRUIT_TRANSLATIONS = {
 }
 
 # Configuración de la cámara
-cap = cv2.VideoCapture(10)
+cap = cv2.VideoCapture(1)  # 10 en ubuntu
 cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
 cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 
@@ -86,6 +86,7 @@ def procesar_imagen(frame):
             else:
                 print(f"⚠️ Se detectaron múltiples frutas: {', '.join(frutas_unicas)}")
                 print("🚫 Por favor, coloca solo un tipo de fruta en la balanza.")
+                asyncio.run(send_fruit("Por favor coloque una sola fruta"))  # Enviar "multiple" al WebSocket
         else:
             print("⚠️ Ninguna fruta detectada.")
         os.remove(img_path)

@@ -41,6 +41,7 @@ const broadcastDatosCombinados = () => {
   const datos = {
     nombre: ultimoArticulo.nombre,
     precio: ultimoArticulo.precio,
+    id: ultimoArticulo.id,
     peso: ultimoPeso.valor,
     precioTotal: precioTotal,
     precioPorKg: ultimoArticulo.precio,

@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "concurrently \"node server.js\" \"python TestConVision.py\""
+    "dev": "nodemon server.js"
   },
   "repository": {
     "type": "git",
@@ -25,6 +25,7 @@
     "http": "^0.0.1-security",
     "mercadopago": "^2.4.0",
     "mysql2": "^3.14.0",
+    "nodemon": "^3.1.10",
     "serialport": "^12.0.0",
     "websockets": "^0.2.0",
     "ws": "^8.18.1"

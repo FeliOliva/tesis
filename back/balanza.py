@@ -6,7 +6,7 @@ from datetime import datetime
 
 # Configuración del puerto serial
 puerto = serial.Serial(
-    port="/dev/ttyUSB0",
+    port="COM4",  # /dev/ttyUSB0 en ubuntu
     baudrate=9600,
     bytesize=serial.EIGHTBITS,
     parity=serial.PARITY_NONE,
@@ -24,8 +24,9 @@ def parsear_peso(respuesta_raw):
 
         if "\x02" in texto:
             datos = texto.split("\x02")[-1]
-            if len(datos) >= 6:
-                peso_str = datos[:6]
+            # Eliminar caracteres no numéricos
+            peso_str = "".join(filter(str.isdigit, datos[:6]))
+            if peso_str:
                 peso_int = int(peso_str)
                 return peso_int
         return None
