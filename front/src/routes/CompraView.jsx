@@ -76,39 +76,85 @@ const CompraView = () => {
     };
   }, []);
 
-  const generarTicket = async ({ id }) => {
-    console.log("Generando ticket con ID:", id);
+  const generarTicket = async ({ id, nro_venta, productos, total, fecha }) => {
+    console.log("Generando ticket para venta:", { id, nro_venta });
     const doc = new jsPDF({
       orientation: "portrait",
       unit: "mm",
-      format: [80, 150],
+      format: [80, productos.length > 2 ? 200 : 150],
     });
 
     const pageWidth = 80;
     const margin = 5;
+    const colProducto = margin;
+    const colCantidad = margin + 35;
+    const colSubtotal = margin + 55;
+    let yPos = 10;
 
-    // Encabezado básico
+    // Encabezado
     doc.setFont("helvetica", "bold");
     doc.setFontSize(12);
-    doc.text("VERDULERIA MI FAMILIA", pageWidth / 2, 15, { align: "center" });
-    doc.text("TICKET DE VENTA", pageWidth / 2, 20, { align: "center" });
-
-    // Línea divisoria
-    doc.setLineWidth(0.3);
-    doc.line(margin, 25, pageWidth - margin, 25);
+    doc.text("VERDULERIA MI FAMILIA", pageWidth / 2, yPos, { align: "center" });
+    yPos += 5;
+    doc.text("TICKET DE VENTA", pageWidth / 2, yPos, { align: "center" });
+    yPos += 5;
 
     // Info básica
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
-    doc.text(`ID Venta: ${id}`, margin, 30);
-    doc.text(`Fecha: ${new Date().toLocaleString()}`, margin, 35);
+    doc.text(`N° Venta: ${nro_venta}`, margin, yPos);
+    yPos += 4;
+    doc.text(`Fecha: ${new Date(fecha).toLocaleString()}`, margin, yPos);
+    yPos += 6;
 
     // Línea divisoria
-    doc.line(margin, 40, pageWidth - margin, 40);
+    doc.setLineWidth(0.2);
+    doc.line(margin, yPos, pageWidth - margin, yPos);
+    yPos += 5;
 
-    // QR con solo el ID de venta
+    // Encabezados de columnas
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.text("PRODUCTO", colProducto, yPos);
+    doc.text("CANT.", colCantidad, yPos);
+    doc.text("SUBTOTAL", colSubtotal, yPos, { align: "right" });
+    yPos += 5;
+
+    // Productos
+    doc.setFont("helvetica", "normal");
+    productos.forEach((producto) => {
+      // Nombre del producto
+      doc.text(producto.nombre, colProducto, yPos);
+
+      // Cantidad (en g si es menor a 1kg, kg si es mayor)
+      const cantidadTexto =
+        producto.cantidad >= 1
+          ? `${producto.cantidad.toFixed(3)} kg`
+          : `${(producto.cantidad * 1000).toFixed(0)} g`;
+      doc.text(cantidadTexto, colCantidad, yPos);
+
+      // Subtotal
+      const subtotal = (producto.cantidad * producto.precio).toFixed(2);
+      doc.text(`$${subtotal}`, colSubtotal, yPos, { align: "right" });
+
+      yPos += 5;
+    });
+
+    // Línea divisoria antes del total
+    doc.setLineWidth(0.2);
+    doc.line(margin, yPos, pageWidth - margin, yPos);
+    yPos += 5;
+
+    // Total (alineado con la columna SUBTOTAL)
+    doc.setFont("helvetica", "bold");
+    doc.text(`TOTAL: $${total.toFixed(2)}`, colSubtotal, yPos, {
+      align: "right",
+    });
+    yPos += 10;
+
+    // QR
     const qrUrl = await QRCode.toDataURL(`${id}`, {
-      width: 150,
+      width: 100,
       margin: 1,
       color: {
         dark: "#000000",
@@ -116,16 +162,21 @@ const CompraView = () => {
       },
     });
 
-    doc.addImage(qrUrl, "PNG", (pageWidth - 20) / 2, 50, 20, 20);
+    doc.addImage(qrUrl, "PNG", (pageWidth - 15) / 2, yPos, 15, 15);
+    yPos += 20;
 
+    // Pie de página
     doc.setFont("helvetica", "italic");
-    doc.setFontSize(9);
-    doc.text("Escanea para ver detalles", pageWidth / 2, 75, {
+    doc.setFontSize(8);
+    doc.text("Escanea para ver detalles", pageWidth / 2, yPos, {
       align: "center",
     });
-    doc.text("¡Gracias por su compra!", pageWidth / 2, 80, { align: "center" });
+    yPos += 4;
+    doc.text("¡Gracias por su compra!", pageWidth / 2, yPos, {
+      align: "center",
+    });
 
-    doc.save(`ticket_${id}.pdf`);
+    doc.save(`ticket_${nro_venta}.pdf`);
   };
 
   const agregarAlCarrito = () => {
@@ -168,13 +219,14 @@ const CompraView = () => {
 
     try {
       const nroVenta = generateNroVenta();
+      const fechaActual = new Date();
 
       // Preparamos los detalles de la venta
       const detallesVenta = carrito.map((item) => ({
         articulo_id: item.articulo_id,
         precio: item.precio,
         cantidad: item.cantidad,
-        producto: item.producto, // Agregamos el nombre para el ticket
+        producto: item.producto,
       }));
 
       // Objeto completo de la venta para el ticket
@@ -193,11 +245,23 @@ const CompraView = () => {
         },
         body: JSON.stringify(ventaData),
       });
+
       if (response.ok) {
         const data = await response.json();
         console.log("Venta registrada:", data);
 
-        generarTicket({ id: data.ventaId });
+        // Generar el ticket con todos los datos necesarios
+        generarTicket({
+          id: data.ventaId, // ID de la venta para el QR
+          nro_venta: nroVenta, // Número de venta visible
+          productos: carrito.map((item) => ({
+            nombre: item.producto,
+            cantidad: parseFloat(item.cantidad),
+            precio: item.precio,
+          })),
+          total: totalCompra,
+          fecha: fechaActual,
+        });
 
         // Mostrar mensaje de agradecimiento
         setShowThankYou(true);
